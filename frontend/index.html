@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hersheys Store — E-Commerce Platform</title>
+  <meta name="description" content="Modern e-commerce platform powered by FastAPI microservices on AWS EKS" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════ TOAST ══════════════════ -->
+  <div id="toast-container"></div>
+
+  <!-- ══════════════════ SIDEBAR ══════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🍫</div>
+      <div>
+        <div class="brand-name">Hersheys</div>
+        <div class="brand-sub">Microservices Platform</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">MAIN</div>
+      <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a href="#" class="nav-item" data-page="products" id="nav-products">
+        <span class="nav-icon">📦</span> Products
+        <span class="nav-badge">142</span>
+      </a>
+      <a href="#" class="nav-item" data-page="orders" id="nav-orders">
+        <span class="nav-icon">🛒</span> Orders
+        <span class="nav-badge pending">8</span>
+      </a>
+      <a href="#" class="nav-item" data-page="users" id="nav-users">
+        <span class="nav-icon">👥</span> Users
+      </a>
+
+      <div class="nav-section-label" style="margin-top:20px">SERVICES</div>
+      <a href="#" class="nav-item" data-page="services" id="nav-services">
+        <span class="nav-icon">⚙️</span> Service Health
+      </a>
+      <a href="#" class="nav-item" data-page="api" id="nav-api">
+        <span class="nav-icon">🔌</span> API Explorer
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="service-dots">
+        <span class="dot green" title="User Service: Online"></span>
+        <span class="dot green" title="Product Service: Online"></span>
+        <span class="dot green" title="Order Service: Online"></span>
+      </div>
+      <span class="footer-status">All services running</span>
+    </div>
+  </aside>
+
+  <!-- ══════════════════ MAIN ══════════════════ -->
+  <main class="main-content" id="main-content">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger">☰</button>
+        <div class="breadcrumb" id="breadcrumb">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" id="global-search" placeholder="Search products, orders…" />
+        </div>
+        <div class="topbar-user" id="topbar-user-btn">
+          <div class="avatar">JD</div>
+          <div>
+            <div class="user-name">John Doe</div>
+            <div class="user-role">Admin</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ─────────── PAGE: DASHBOARD ─────────── -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back! Here's what's happening with your store.</p>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card" style="--accent:#6366f1">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-value" data-count="84320">$0</div>
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-change positive">↑ 12.5% this month</div>
+        </div>
+        <div class="kpi-card" style="--accent:#10b981">
+          <div class="kpi-icon">🛒</div>
+          <div class="kpi-value" data-count="1248">0</div>
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-change positive">↑ 8.2% this month</div>
+        </div>
+        <div class="kpi-card" style="--accent:#f59e0b">
+          <div class="kpi-icon">📦</div>
+          <div class="kpi-value" data-count="142">0</div>
+          <div class="kpi-label">Products</div>
+          <div class="kpi-change neutral">→ 3 added this week</div>
+        </div>
+        <div class="kpi-card" style="--accent:#ec4899">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-value" data-count="3872">0</div>
+          <div class="kpi-label">Registered Users</div>
+          <div class="kpi-change positive">↑ 5.1% this month</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3>Revenue (Last 7 Days)</h3>
+            <span class="badge green">Live</span>
+          </div>
+          <canvas id="revenue-chart" height="200"></canvas>
+        </div>
+        <div class="card chart-card small">
+          <div class="card-header">
+            <h3>Order Status</h3>
+          </div>
+          <canvas id="status-chart" height="200"></canvas>
+          <div class="donut-legend" id="donut-legend"></div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="card" style="margin-top:24px">
+        <div class="card-header">
+          <h3>Recent Orders</h3>
+          <button class="btn-link" data-page="orders">View all →</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="recent-orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th><th>Customer</th><th>Products</th>
+                <th>Total</th><th>Status</th><th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="recent-orders-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── PAGE: PRODUCTS ─────────── -->
+    <section class="page" id="page-products">
+      <div class="page-header">
+        <h1>Product Catalog</h1>
+        <p>Manage your product inventory powered by DynamoDB + S3</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input type="text" class="search-input" id="product-search" placeholder="🔍  Search products…" />
+          <select class="select-input" id="category-filter">
+            <option value="">All Categories</option>
+            <option>Electronics</option><option>Clothing</option>
+            <option>Food</option><option>Books</option>
+            <option>Home</option><option>Sports</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="add-product-btn">+ Add Product</button>
+      </div>
+
+      <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <!-- ─────────── PAGE: ORDERS ─────────── -->
+    <section class="page" id="page-orders">
+      <div class="page-header">
+        <h1>Order Management</h1>
+        <p>Full order lifecycle — DynamoDB backed, real-time status updates</p>
+      </div>
+
+      <div class="order-status-tabs">
+        <button class="status-tab active" data-status="all">All Orders</button>
+        <button class="status-tab" data-status="pending">Pending</button>
+        <button class="status-tab" data-status="confirmed">Confirmed</button>
+        <button class="status-tab" data-status="processing">Processing</button>
+        <button class="status-tab" data-status="shipped">Shipped</button>
+        <button class="status-tab" data-status="delivered">Delivered</button>
+        <button class="status-tab" data-status="cancelled">Cancelled</button>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order ID</th><th>Customer</th><th>Items</th>
+                <th>Total</th><th>Payment</th><th>Status</th>
+                <th>Date</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── PAGE: USERS ─────────── -->
+    <section class="page" id="page-users">
+      <div class="page-header">
+        <h1>User Management</h1>
+        <p>Authentication powered by AWS Cognito</p>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" class="search-input" id="user-search" placeholder="🔍  Search users…" />
+        <button class="btn-primary" id="invite-user-btn">+ Invite User</button>
+      </div>
+
+      <div class="users-grid" id="users-grid"></div>
+    </section>
+
+    <!-- ─────────── PAGE: SERVICES ─────────── -->
+    <section class="page" id="page-services">
+      <div class="page-header">
+        <h1>Service Health</h1>
+        <p>Real-time health of all microservices and AWS dependencies</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card" id="svc-user">
+          <div class="svc-header">
+            <div class="svc-icon">👤</div>
+            <div>
+              <div class="svc-name">User Service</div>
+              <div class="svc-url">http://localhost:8001</div>
+            </div>
+            <div class="svc-status-dot green pulse"></div>
+          </div>
+          <div class="svc-metrics">
+            <div class="metric"><span>Status</span><span class="green-text">Healthy</span></div>
+            <div class="metric"><span>Uptime</span><span>99.98%</span></div>
+            <div class="metric"><span>Replicas</span><span>2 / 2</span></div>
+            <div class="metric"><span>CPU</span><span>12%</span></div>
+            <div class="metric"><span>Memory</span><span>245 MB</span></div>
+            <div class="metric"><span>Requests/min</span><span>342</span></div>
+          </div>
+          <div class="svc-deps">
+            <div class="dep healthy">✓ AWS Cognito</div>
+          </div>
+          <div class="svc-endpoints">
+            <span class="endpoint-tag">POST /auth/register</span>
+            <span class="endpoint-tag">POST /auth/login</span>
+            <span class="endpoint-tag">GET /users/me</span>
+          </div>
+        </div>
+
+        <div class="service-card" id="svc-product">
+          <div class="svc-header">
+            <div class="svc-icon">📦</div>
+            <div>
+              <div class="svc-name">Product Service</div>
+              <div class="svc-url">http://localhost:8002</div>
+            </div>
+            <div class="svc-status-dot green pulse"></div>
+          </div>
+          <div class="svc-metrics">
+            <div class="metric"><span>Status</span><span class="green-text">Healthy</span></div>
+            <div class="metric"><span>Uptime</span><span>99.99%</span></div>
+            <div class="metric"><span>Replicas</span><span>2 / 2</span></div>
+            <div class="metric"><span>CPU</span><span>8%</span></div>
+            <div class="metric"><span>Memory</span><span>198 MB</span></div>
+            <div class="metric"><span>Requests/min</span><span>891</span></div>
+          </div>
+          <div class="svc-deps">
+            <div class="dep healthy">✓ DynamoDB (products)</div>
+            <div class="dep healthy">✓ S3 Bucket</div>
+          </div>
+          <div class="svc-endpoints">
+            <span class="endpoint-tag">GET /products</span>
+            <span class="endpoint-tag">POST /products</span>
+            <span class="endpoint-tag">GET /products/search</span>
+          </div>
+        </div>
+
+        <div class="service-card" id="svc-order">
+          <div class="svc-header">
+            <div class="svc-icon">🛒</div>
+            <div>
+              <div class="svc-name">Order Service</div>
+              <div class="svc-url">http://localhost:8003</div>
+            </div>
+            <div class="svc-status-dot green pulse"></div>
+          </div>
+          <div class="svc-metrics">
+            <div class="metric"><span>Status</span><span class="green-text">Healthy</span></div>
+            <div class="metric"><span>Uptime</span><span>99.97%</span></div>
+            <div class="metric"><span>Replicas</span><span>2 / 2</span></div>
+            <div class="metric"><span>CPU</span><span>18%</span></div>
+            <div class="metric"><span>Memory</span><span>312 MB</span></div>
+            <div class="metric"><span>Requests/min</span><span>217</span></div>
+          </div>
+          <div class="svc-deps">
+            <div class="dep healthy">✓ DynamoDB (orders)</div>
+            <div class="dep healthy">✓ Product Service</div>
+            <div class="dep healthy">✓ User Service</div>
+          </div>
+          <div class="svc-endpoints">
+            <span class="endpoint-tag">POST /orders</span>
+            <span class="endpoint-tag">GET /orders/{id}</span>
+            <span class="endpoint-tag">PATCH /orders/{id}/status</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- EKS/AWS Infrastructure -->
+      <div class="card" style="margin-top:28px">
+        <div class="card-header"><h3>AWS Infrastructure</h3><span class="badge green">Connected</span></div>
+        <div class="infra-grid">
+          <div class="infra-item"><span class="infra-icon">🐳</span><span>ECR</span><span class="green-text">3 repos</span></div>
+          <div class="infra-item"><span class="infra-icon">☸️</span><span>EKS Cluster</span><span class="green-text">Running</span></div>
+          <div class="infra-item"><span class="infra-icon">🗄️</span><span>DynamoDB</span><span class="green-text">2 tables</span></div>
+          <div class="infra-item"><span class="infra-icon">🗂️</span><span>S3 Bucket</span><span class="green-text">Active</span></div>
+          <div class="infra-item"><span class="infra-icon">🔑</span><span>Cognito</span><span class="green-text">User Pool Active</span></div>
+          <div class="infra-item"><span class="infra-icon">⚖️</span><span>ALB Ingress</span><span class="green-text">Routing</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── PAGE: API EXPLORER ─────────── -->
+    <section class="page" id="page-api">
+      <div class="page-header">
+        <h1>API Explorer</h1>
+        <p>Interactive API reference for all 3 microservices</p>
+      </div>
+
+      <div class="api-grid">
+        <!-- User Service -->
+        <div class="api-group">
+          <div class="api-group-header user-color">
+            <span>👤</span> User Service <small>:8001</small>
+          </div>
+          <div class="api-endpoints">
+            <div class="api-ep" data-method="POST" data-path="/api/v1/auth/register" data-svc="User Service">
+              <span class="method post">POST</span><span class="ep-path">/api/v1/auth/register</span>
+              <span class="ep-desc">Register new user</span>
+            </div>
+            <div class="api-ep" data-method="POST" data-path="/api/v1/auth/login" data-svc="User Service">
+              <span class="method post">POST</span><span class="ep-path">/api/v1/auth/login</span>
+              <span class="ep-desc">Login → JWT tokens</span>
+            </div>
+            <div class="api-ep" data-method="POST" data-path="/api/v1/auth/confirm" data-svc="User Service">
+              <span class="method post">POST</span><span class="ep-path">/api/v1/auth/confirm</span>
+              <span class="ep-desc">Confirm email OTP</span>
+            </div>
+            <div class="api-ep" data-method="POST" data-path="/api/v1/auth/logout" data-svc="User Service">
+              <span class="method post">POST</span><span class="ep-path">/api/v1/auth/logout</span>
+              <span class="ep-desc">Global sign out</span>
+            </div>
+            <div class="api-ep" data-method="GET" data-path="/api/v1/users/me" data-svc="User Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/users/me</span>
+              <span class="ep-desc">Get my profile</span>
+            </div>
+            <div class="api-ep" data-method="PUT" data-path="/api/v1/users/me" data-svc="User Service">
+              <span class="method put">PUT</span><span class="ep-path">/api/v1/users/me</span>
+              <span class="ep-desc">Update profile</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Service -->
+        <div class="api-group">
+          <div class="api-group-header product-color">
+            <span>📦</span> Product Service <small>:8002</small>
+          </div>
+          <div class="api-endpoints">
+            <div class="api-ep" data-method="GET" data-path="/api/v1/products/" data-svc="Product Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/products/</span>
+              <span class="ep-desc">List products</span>
+            </div>
+            <div class="api-ep" data-method="POST" data-path="/api/v1/products/" data-svc="Product Service">
+              <span class="method post">POST</span><span class="ep-path">/api/v1/products/</span>
+              <span class="ep-desc">Create product</span>
+            </div>
+            <div class="api-ep" data-method="GET" data-path="/api/v1/products/search?q=" data-svc="Product Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/products/search</span>
+              <span class="ep-desc">Search by keyword</span>
+            </div>
+            <div class="api-ep" data-method="GET" data-path="/api/v1/products/{id}" data-svc="Product Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/products/{id}</span>
+              <span class="ep-desc">Get by ID</span>
+            </div>
+            <div class="api-ep" data-method="PUT" data-path="/api/v1/products/{id}" data-svc="Product Service">
+              <span class="method put">PUT</span><span class="ep-path">/api/v1/products/{id}</span>
+              <span class="ep-desc">Update product</span>
+            </div>
+            <div class="api-ep" data-method="DELETE" data-path="/api/v1/products/{id}" data-svc="Product Service">
+              <span class="method delete">DEL</span><span class="ep-path">/api/v1/products/{id}</span>
+              <span class="ep-desc">Soft delete</span>
+            </div>
+            <div class="api-ep" data-method="POST" data-path="/api/v1/products/{id}/images/upload-url" data-svc="Product Service">
+              <span class="method post">POST</span><span class="ep-path">/api/v1/products/{id}/images/upload-url</span>
+              <span class="ep-desc">S3 presigned URL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Service -->
+        <div class="api-group">
+          <div class="api-group-header order-color">
+            <span>🛒</span> Order Service <small>:8003</small>
+          </div>
+          <div class="api-endpoints">
+            <div class="api-ep" data-method="POST" data-path="/api/v1/orders/" data-svc="Order Service">
+              <span class="method post">POST</span><span class="ep-path">/api/v1/orders/</span>
+              <span class="ep-desc">Place new order</span>
+            </div>
+            <div class="api-ep" data-method="GET" data-path="/api/v1/orders/" data-svc="Order Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/orders/</span>
+              <span class="ep-desc">List all (admin)</span>
+            </div>
+            <div class="api-ep" data-method="GET" data-path="/api/v1/orders/{id}" data-svc="Order Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/orders/{id}</span>
+              <span class="ep-desc">Get order</span>
+            </div>
+            <div class="api-ep" data-method="GET" data-path="/api/v1/orders/user/{user_id}" data-svc="Order Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/orders/user/{id}</span>
+              <span class="ep-desc">User's orders</span>
+            </div>
+            <div class="api-ep" data-method="PATCH" data-path="/api/v1/orders/{id}/status" data-svc="Order Service">
+              <span class="method patch">PATCH</span><span class="ep-path">/api/v1/orders/{id}/status</span>
+              <span class="ep-desc">Update status</span>
+            </div>
+            <div class="api-ep" data-method="GET" data-path="/api/v1/orders/user/{id}/summary" data-svc="Order Service">
+              <span class="method get">GET</span><span class="ep-path">/api/v1/orders/user/{id}/summary</span>
+              <span class="ep-desc">Order stats</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Detail Panel -->
+      <div class="api-detail-panel" id="api-detail" style="display:none">
+        <div class="api-detail-header">
+          <span id="detail-method-badge" class="method post">POST</span>
+          <span id="detail-path" class="detail-path"></span>
+          <span id="detail-svc" class="detail-svc-badge"></span>
+          <button class="close-btn" id="api-detail-close">✕</button>
+        </div>
+        <div class="api-detail-body">
+          <div class="detail-section">
+            <div class="detail-label">MOCK RESPONSE</div>
+            <pre id="detail-response" class="code-block"></pre>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">CURL EXAMPLE</div>
+            <pre id="detail-curl" class="code-block curl"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════ MODALS ══════════════ -->
+
+  <!-- Add Product Modal -->
+  <div class="modal-overlay" id="modal-product">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add New Product</h2>
+        <button class="close-btn" id="close-product-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" id="p-name" placeholder="Premium Wireless Headphones" />
+          </div>
+          <div class="form-group">
+            <label>SKU</label>
+            <input type="text" id="p-sku" placeholder="WH-001" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="p-desc" rows="3" placeholder="Product description…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Price (USD)</label>
+            <input type="number" id="p-price" placeholder="299.99" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label>Stock Quantity</label>
+            <input type="number" id="p-stock" placeholder="100" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="p-category">
+              <option>Electronics</option><option>Clothing</option>
+              <option>Food</option><option>Books</option>
+              <option>Home</option><option>Sports</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Brand</label>
+            <input type="text" id="p-brand" placeholder="Apple, Nike, etc." />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancel-product">Cancel</button>
+        <button class="btn-primary" id="save-product">Create Product →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" id="modal-order">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2>Order Details</h2>
+        <button class="close-btn" id="close-order-modal">✕</button>
+      </div>
+      <div class="modal-body" id="order-detail-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
